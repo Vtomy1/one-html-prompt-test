@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { Copy, Check, Download, FileCode, CheckCircle2, RotateCcw } from 'lucide-react';
+import { exportHtmlFile } from '../utils/formatHtml';
 
 interface CodeEditorProps {
   html: string;
   onChangeHtml: (updated: string) => void;
+  onOpenExportModal?: () => void;
   onResetOriginal?: () => void;
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
   html,
   onChangeHtml,
+  onOpenExportModal,
   onResetOriginal,
 }) => {
   const [copied, setCopied] = useState<boolean>(false);
@@ -26,15 +29,11 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   };
 
   const handleDownload = () => {
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `responsive-template-${Date.now()}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    if (onOpenExportModal) {
+      onOpenExportModal();
+    } else {
+      exportHtmlFile(html, 'responsive-template');
+    }
   };
 
   const lineCount = html.split('\n').length;
@@ -105,9 +104,10 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           <button
             onClick={handleDownload}
             className="px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors flex items-center gap-1.5 shadow-xs"
+            title="Download formatted .html file"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Download .html</span>
+            <span>Export HTML</span>
           </button>
         </div>
       </div>

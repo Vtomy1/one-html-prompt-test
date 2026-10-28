@@ -7,6 +7,7 @@ interface HeaderProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
   onOpenNewPrompt: () => void;
+  onExportHtml: () => void;
   viewportWidth: number;
   auditScore?: number;
 }
@@ -15,6 +16,7 @@ export const Header: React.FC<HeaderProps> = ({
   activeTab,
   setActiveTab,
   onOpenNewPrompt,
+  onExportHtml,
   auditScore = 100,
 }) => {
   return (
@@ -86,8 +88,8 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </nav>
 
-        {/* Zone 3: Primary Action & Mobile Tab Selector */}
-        <div className="flex items-center gap-3 shrink-0">
+        {/* Zone 3: Primary Actions (Export HTML + Generate Code) */}
+        <div className="flex items-center gap-2.5 shrink-0">
           {/* Mobile view selector */}
           <div className="flex md:hidden items-center gap-1 p-1 bg-slate-100 rounded-lg">
             <button
@@ -120,6 +122,17 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
 
+          {/* Explicit Export HTML Button */}
+          <button
+            onClick={onExportHtml}
+            className="px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap"
+            title="Download current formatted HTML file"
+          >
+            <Code2 className="w-3.5 h-3.5 text-indigo-600" />
+            <span>Export HTML</span>
+          </button>
+
+          {/* Primary Action Button */}
           <button
             onClick={onOpenNewPrompt}
             className="px-3.5 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-colors flex items-center gap-2 whitespace-nowrap"

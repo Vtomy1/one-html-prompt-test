@@ -6,9 +6,10 @@ import { CodeEditor } from './components/CodeEditor';
 import { MetaPromptHub } from './components/MetaPromptHub';
 import { TemplateGallery } from './components/TemplateGallery';
 import { ResponsiveAuditor } from './components/ResponsiveAuditor';
+import { ExportModal } from './components/ExportModal';
 import { TEMPLATES, TemplateItem } from './data/templates';
 import { AI_MODELS } from './data/models';
-import { Eye, Code2, Columns, Sparkles, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Eye, Code2, Columns, Sparkles, CheckCircle2, ChevronRight, Download } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('studio');
@@ -19,6 +20,9 @@ export default function App() {
   const [currentPrompt, setCurrentPrompt] = useState<string>(
     'Create an enterprise telemetry console for infrastructure monitoring with live KPI cards, interactive time period selector, responsive SVG throughput chart, and data table with cluster health status.'
   );
+
+  // Export Modal state
+  const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
 
   // View Mode inside Studio: 'preview' (visual canvas), 'code' (interactive editor), or 'split' (side-by-side)
   const [studioViewMode, setStudioViewMode] = useState<'preview' | 'code' | 'split'>('preview');
@@ -126,6 +130,7 @@ export default function App() {
           setActiveTab('studio');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
+        onExportHtml={() => setIsExportModalOpen(true)}
         viewportWidth={1280}
         auditScore={auditScore}
       />
@@ -202,6 +207,7 @@ export default function App() {
               <ResponsiveViewport
                 html={currentHtml}
                 onUpdateHtml={setCurrentHtml}
+                onOpenExportModal={() => setIsExportModalOpen(true)}
                 activeModelName={activeModel.name}
               />
             )}
@@ -210,6 +216,7 @@ export default function App() {
               <CodeEditor
                 html={currentHtml}
                 onChangeHtml={setCurrentHtml}
+                onOpenExportModal={() => setIsExportModalOpen(true)}
                 onResetOriginal={() => setCurrentHtml(originalHtml)}
               />
             )}
@@ -220,6 +227,7 @@ export default function App() {
                   <ResponsiveViewport
                     html={currentHtml}
                     onUpdateHtml={setCurrentHtml}
+                    onOpenExportModal={() => setIsExportModalOpen(true)}
                     activeModelName={activeModel.name}
                   />
                 </div>
@@ -227,6 +235,7 @@ export default function App() {
                   <CodeEditor
                     html={currentHtml}
                     onChangeHtml={setCurrentHtml}
+                    onOpenExportModal={() => setIsExportModalOpen(true)}
                     onResetOriginal={() => setCurrentHtml(originalHtml)}
                   />
                 </div>
@@ -301,6 +310,14 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Export HTML Modal */}
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        html={currentHtml}
+        defaultFilename={selectedTemplate.id || 'responsive-template'}
+      />
     </div>
   );
 }

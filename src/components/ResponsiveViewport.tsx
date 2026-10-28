@@ -13,12 +13,15 @@ import {
   ChevronDown,
   Layers,
   ZoomIn,
-  ZoomOut
+  ZoomOut,
+  Code2
 } from 'lucide-react';
+import { exportHtmlFile } from '../utils/formatHtml';
 
 interface ResponsiveViewportProps {
   html: string;
   onUpdateHtml?: (newHtml: string) => void;
+  onOpenExportModal?: () => void;
   activeModelName?: string;
 }
 
@@ -33,6 +36,7 @@ const VIEWPORT_PRESETS = [
 
 export const ResponsiveViewport: React.FC<ResponsiveViewportProps> = ({
   html,
+  onOpenExportModal,
   activeModelName,
 }) => {
   const [currentWidth, setCurrentWidth] = useState<number>(1280);
@@ -76,17 +80,13 @@ export const ResponsiveViewport: React.FC<ResponsiveViewportProps> = ({
     }
   };
 
-  // Download standalone HTML
+  // Export formatted standalone HTML
   const handleDownload = () => {
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `omni-template-${Date.now()}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    if (onOpenExportModal) {
+      onOpenExportModal();
+    } else {
+      exportHtmlFile(html);
+    }
   };
 
   // Open Preview in New Tab
@@ -224,13 +224,14 @@ export const ResponsiveViewport: React.FC<ResponsiveViewportProps> = ({
             {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
           </button>
 
-          {/* Download HTML */}
+          {/* Export HTML Button */}
           <button
             onClick={handleDownload}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-            title="Download .html file"
+            className="px-2.5 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors flex items-center gap-1.5 shadow-xs"
+            title="Download formatted .html file"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Export HTML</span>
           </button>
 
           {/* Open in New Window */}
