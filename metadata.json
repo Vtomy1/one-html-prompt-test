@@ -1,0 +1,6 @@
+{
+  "name": "OmniHTML - Universal Prompt-to-HTML & Responsive Template Engine",
+  "description": "Cross-model prompt compiler and live responsive HTML generator for Gemini, Claude, GPT-4o, DeepSeek, v0, Bolt, and Cursor.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
