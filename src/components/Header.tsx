@@ -1,5 +1,7 @@
 import React from 'react';
 import { Code2, Smartphone, Monitor, Sparkles, ShieldCheck, Library, Layers } from 'lucide-react';
+import { HistoryControl } from './HistoryControl';
+import { HistoryEntry } from '../hooks/useHtmlHistory';
 
 export type ActiveTab = 'studio' | 'metaprompts' | 'templates' | 'auditor';
 
@@ -10,6 +12,14 @@ interface HeaderProps {
   onExportHtml: () => void;
   viewportWidth: number;
   auditScore?: number;
+  // History Tracker Props
+  history: HistoryEntry[];
+  currentIndex: number;
+  canUndo: boolean;
+  canRedo: boolean;
+  onUndo: () => void;
+  onRedo: () => void;
+  onRevertToIndex: (index: number) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -18,6 +28,13 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenNewPrompt,
   onExportHtml,
   auditScore = 100,
+  history,
+  currentIndex,
+  canUndo,
+  canRedo,
+  onUndo,
+  onRedo,
+  onRevertToIndex,
 }) => {
   return (
     <header className="border-b border-neutral-200 bg-white/95 backdrop-blur sticky top-0 z-50">
@@ -121,6 +138,17 @@ export const Header: React.FC<HeaderProps> = ({
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
             </button>
           </div>
+
+          {/* Version History Tracker (Last 5 Versions) */}
+          <HistoryControl
+            history={history}
+            currentIndex={currentIndex}
+            canUndo={canUndo}
+            canRedo={canRedo}
+            onUndo={onUndo}
+            onRedo={onRedo}
+            onRevertToIndex={onRevertToIndex}
+          />
 
           {/* Explicit Export HTML Button */}
           <button

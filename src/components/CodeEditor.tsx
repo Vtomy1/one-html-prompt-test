@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Check, Download, FileCode, CheckCircle2, RotateCcw } from 'lucide-react';
+import { Copy, Check, Download, FileCode, CheckCircle2, RotateCcw, Undo2, Redo2 } from 'lucide-react';
 import { exportHtmlFile } from '../utils/formatHtml';
 
 interface CodeEditorProps {
@@ -7,6 +7,10 @@ interface CodeEditorProps {
   onChangeHtml: (updated: string) => void;
   onOpenExportModal?: () => void;
   onResetOriginal?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
+  onUndo?: () => void;
+  onRedo?: () => void;
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
@@ -14,6 +18,10 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   onChangeHtml,
   onOpenExportModal,
   onResetOriginal,
+  canUndo = false,
+  canRedo = false,
+  onUndo,
+  onRedo,
 }) => {
   const [copied, setCopied] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -73,6 +81,38 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          {/* Editor Undo / Redo */}
+          {onUndo && (
+            <div className="flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700">
+              <button
+                type="button"
+                onClick={onUndo}
+                disabled={!canUndo}
+                className={`p-1.5 rounded text-xs font-semibold flex items-center gap-1 transition-colors ${
+                  canUndo
+                    ? 'text-slate-200 hover:text-white hover:bg-slate-700'
+                    : 'text-slate-500 cursor-not-allowed opacity-40'
+                }`}
+                title="Undo code edit (Ctrl+Z)"
+              >
+                <Undo2 className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={onRedo}
+                disabled={!canRedo}
+                className={`p-1.5 rounded text-xs font-semibold flex items-center gap-1 transition-colors ${
+                  canRedo
+                    ? 'text-slate-200 hover:text-white hover:bg-slate-700'
+                    : 'text-slate-500 cursor-not-allowed opacity-40'
+                }`}
+                title="Redo code edit (Ctrl+Y)"
+              >
+                <Redo2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
           {onResetOriginal && (
             <button
               onClick={onResetOriginal}

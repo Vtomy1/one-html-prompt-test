@@ -9,12 +9,27 @@ import { ResponsiveAuditor } from './components/ResponsiveAuditor';
 import { ExportModal } from './components/ExportModal';
 import { TEMPLATES, TemplateItem } from './data/templates';
 import { AI_MODELS } from './data/models';
+import { useHtmlHistory } from './hooks/useHtmlHistory';
 import { Eye, Code2, Columns, Sparkles, CheckCircle2, ChevronRight, Download } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('studio');
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateItem>(TEMPLATES[0]);
-  const [currentHtml, setCurrentHtml] = useState<string>(TEMPLATES[0].html);
+
+  // History State Tracker (Stores last 5 versions with undo/redo/revert)
+  const {
+    currentHtml,
+    history,
+    currentIndex,
+    canUndo,
+    canRedo,
+    undo,
+    redo,
+    pushHistory,
+    updateHtml,
+    revertToIndex,
+  } = useHtmlHistory(TEMPLATES[0].html, `Template: ${TEMPLATES[0].title}`);
+
   const [originalHtml, setOriginalHtml] = useState<string>(TEMPLATES[0].html);
   const [activeModelId, setActiveModelId] = useState<string>('gemini');
   const [currentPrompt, setCurrentPrompt] = useState<string>(
@@ -79,7 +94,7 @@ export default function App() {
         throw new Error(data.error || 'Failed to generate responsive HTML template.');
       }
 
-      setCurrentHtml(data.html);
+      pushHistory(data.html, 'ai_generation', `AI Generated (${activeModel.shortName})`);
       setOriginalHtml(data.html);
       setActiveTab('studio');
       setStudioViewMode('preview');
@@ -107,7 +122,7 @@ export default function App() {
   // Load a curated template
   const handleSelectTemplate = (template: TemplateItem) => {
     setSelectedTemplate(template);
-    setCurrentHtml(template.html);
+    pushHistory(template.html, 'template', `Template: ${template.title}`);
     setOriginalHtml(template.html);
     setActiveModelId(template.recommendedModel);
     setActiveTab('studio');
@@ -115,7 +130,7 @@ export default function App() {
 
   // Apply auto-fix from the auditor
   const handleApplyFix = (fixedHtml: string) => {
-    setCurrentHtml(fixedHtml);
+    pushHistory(fixedHtml, 'auto_fix', 'Responsive Auto-Fix Applied');
   };
 
   const activeModel = AI_MODELS.find(m => m.id === activeModelId) || AI_MODELS[0];
@@ -133,6 +148,13 @@ export default function App() {
         onExportHtml={() => setIsExportModalOpen(true)}
         viewportWidth={1280}
         auditScore={auditScore}
+        history={history}
+        currentIndex={currentIndex}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        onUndo={undo}
+        onRedo={redo}
+        onRevertToIndex={revertToIndex}
       />
 
       {/* Main Container */}
@@ -206,7 +228,7 @@ export default function App() {
             {studioViewMode === 'preview' && (
               <ResponsiveViewport
                 html={currentHtml}
-                onUpdateHtml={setCurrentHtml}
+                onUpdateHtml={(newHtml) => updateHtml(newHtml, 'Viewport Live Update')}
                 onOpenExportModal={() => setIsExportModalOpen(true)}
                 activeModelName={activeModel.name}
               />
@@ -215,9 +237,13 @@ export default function App() {
             {studioViewMode === 'code' && (
               <CodeEditor
                 html={currentHtml}
-                onChangeHtml={setCurrentHtml}
+                onChangeHtml={(updated) => updateHtml(updated, 'Manual Code Edit')}
                 onOpenExportModal={() => setIsExportModalOpen(true)}
-                onResetOriginal={() => setCurrentHtml(originalHtml)}
+                onResetOriginal={() => pushHistory(originalHtml, 'editor', 'Reset to Original')}
+                canUndo={canUndo}
+                canRedo={canRedo}
+                onUndo={undo}
+                onRedo={redo}
               />
             )}
 
@@ -226,7 +252,7 @@ export default function App() {
                 <div className="w-full">
                   <ResponsiveViewport
                     html={currentHtml}
-                    onUpdateHtml={setCurrentHtml}
+                    onUpdateHtml={(newHtml) => updateHtml(newHtml, 'Viewport Live Update')}
                     onOpenExportModal={() => setIsExportModalOpen(true)}
                     activeModelName={activeModel.name}
                   />
@@ -234,9 +260,13 @@ export default function App() {
                 <div className="w-full">
                   <CodeEditor
                     html={currentHtml}
-                    onChangeHtml={setCurrentHtml}
+                    onChangeHtml={(updated) => updateHtml(updated, 'Manual Code Edit')}
                     onOpenExportModal={() => setIsExportModalOpen(true)}
-                    onResetOriginal={() => setCurrentHtml(originalHtml)}
+                    onResetOriginal={() => pushHistory(originalHtml, 'editor', 'Reset to Original')}
+                    canUndo={canUndo}
+                    canRedo={canRedo}
+                    onUndo={undo}
+                    onRedo={redo}
                   />
                 </div>
               </div>
