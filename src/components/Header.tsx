@@ -20,6 +20,10 @@ interface HeaderProps {
   onUndo: () => void;
   onRedo: () => void;
   onRevertToIndex: (index: number) => void;
+  // Long-Term Saved Snapshot Props
+  savedCount?: number;
+  onOpenSaveSnapshot?: () => void;
+  onOpenSnapshotsDrawer?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -35,6 +39,9 @@ export const Header: React.FC<HeaderProps> = ({
   onUndo,
   onRedo,
   onRevertToIndex,
+  savedCount = 0,
+  onOpenSaveSnapshot,
+  onOpenSnapshotsDrawer,
 }) => {
   return (
     <header className="border-b border-neutral-200 bg-white/95 backdrop-blur sticky top-0 z-50">
@@ -148,7 +155,22 @@ export const Header: React.FC<HeaderProps> = ({
             onUndo={onUndo}
             onRedo={onRedo}
             onRevertToIndex={onRevertToIndex}
+            savedCount={savedCount}
+            onOpenSaveSnapshot={onOpenSaveSnapshot}
+            onOpenSnapshotsDrawer={onOpenSnapshotsDrawer}
           />
+
+          {/* Long-Term Saved Snapshots Collection Button */}
+          {onOpenSnapshotsDrawer && (
+            <button
+              onClick={onOpenSnapshotsDrawer}
+              className="px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap"
+              title="Open persistent saved snapshots collection"
+            >
+              <span className="w-2 h-2 rounded-full bg-amber-500" />
+              <span>Snapshots ({savedCount})</span>
+            </button>
+          )}
 
           {/* Explicit Export HTML Button */}
           <button

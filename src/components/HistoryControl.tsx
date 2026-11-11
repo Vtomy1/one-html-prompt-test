@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Undo2, Redo2, History, RotateCcw, Check, Sparkles, Code2, Library, Wrench, Clock, ChevronDown } from 'lucide-react';
+import { Undo2, Redo2, History, RotateCcw, Check, Sparkles, Code2, Library, Wrench, Clock, ChevronDown, Bookmark } from 'lucide-react';
 import { HistoryEntry } from '../hooks/useHtmlHistory';
 
 interface HistoryControlProps {
@@ -10,6 +10,9 @@ interface HistoryControlProps {
   onUndo: () => void;
   onRedo: () => void;
   onRevertToIndex: (index: number) => void;
+  savedCount?: number;
+  onOpenSaveSnapshot?: () => void;
+  onOpenSnapshotsDrawer?: () => void;
 }
 
 export const HistoryControl: React.FC<HistoryControlProps> = ({
@@ -20,6 +23,9 @@ export const HistoryControl: React.FC<HistoryControlProps> = ({
   onUndo,
   onRedo,
   onRevertToIndex,
+  savedCount = 0,
+  onOpenSaveSnapshot,
+  onOpenSnapshotsDrawer,
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -194,6 +200,41 @@ export const HistoryControl: React.FC<HistoryControlProps> = ({
                 </div>
               );
             })}
+          </div>
+
+          {/* Long-Term Snapshot Action Bar */}
+          <div className="p-3 bg-amber-50/60 border-t border-amber-200/60 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 text-xs text-amber-900 font-medium">
+              <Bookmark className="w-3.5 h-3.5 text-amber-600" />
+              <span>Permanent Storage:</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              {onOpenSnapshotsDrawer && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsOpen(false);
+                    onOpenSnapshotsDrawer();
+                  }}
+                  className="px-2.5 py-1 text-[11px] font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors shadow-2xs"
+                >
+                  View All ({savedCount})
+                </button>
+              )}
+              {onOpenSaveSnapshot && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsOpen(false);
+                    onOpenSaveSnapshot();
+                  }}
+                  className="px-2.5 py-1 text-[11px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors shadow-2xs flex items-center gap-1"
+                >
+                  <Bookmark className="w-3 h-3" />
+                  <span>Save Snapshot</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Footer Shortcuts hint */}

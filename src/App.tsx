@@ -7,10 +7,13 @@ import { MetaPromptHub } from './components/MetaPromptHub';
 import { TemplateGallery } from './components/TemplateGallery';
 import { ResponsiveAuditor } from './components/ResponsiveAuditor';
 import { ExportModal } from './components/ExportModal';
+import { SaveSnapshotModal } from './components/SaveSnapshotModal';
+import { SavedSnapshotsDrawer } from './components/SavedSnapshotsDrawer';
 import { TEMPLATES, TemplateItem } from './data/templates';
 import { AI_MODELS } from './data/models';
 import { useHtmlHistory } from './hooks/useHtmlHistory';
-import { Eye, Code2, Columns, Sparkles, CheckCircle2, ChevronRight, Download } from 'lucide-react';
+import { useSavedSnapshots, SavedSnapshot } from './hooks/useSavedSnapshots';
+import { Eye, Code2, Columns, Sparkles, CheckCircle2, ChevronRight, Download, Bookmark } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('studio');
@@ -30,14 +33,25 @@ export default function App() {
     revertToIndex,
   } = useHtmlHistory(TEMPLATES[0].html, `Template: ${TEMPLATES[0].title}`);
 
+  // Persistent Long-Term Saved Snapshots Collection (localStorage)
+  const {
+    snapshots,
+    saveSnapshot,
+    deleteSnapshot,
+    clearAllSnapshots,
+    totalSnapshots,
+  } = useSavedSnapshots();
+
   const [originalHtml, setOriginalHtml] = useState<string>(TEMPLATES[0].html);
   const [activeModelId, setActiveModelId] = useState<string>('gemini');
   const [currentPrompt, setCurrentPrompt] = useState<string>(
     'Create an enterprise telemetry console for infrastructure monitoring with live KPI cards, interactive time period selector, responsive SVG throughput chart, and data table with cluster health status.'
   );
 
-  // Export Modal state
+  // Modals & Drawers state
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
+  const [isSaveSnapshotOpen, setIsSaveSnapshotOpen] = useState<boolean>(false);
+  const [isSnapshotsDrawerOpen, setIsSnapshotsDrawerOpen] = useState<boolean>(false);
 
   // View Mode inside Studio: 'preview' (visual canvas), 'code' (interactive editor), or 'split' (side-by-side)
   const [studioViewMode, setStudioViewMode] = useState<'preview' | 'code' | 'split'>('preview');
@@ -133,6 +147,13 @@ export default function App() {
     pushHistory(fixedHtml, 'auto_fix', 'Responsive Auto-Fix Applied');
   };
 
+  // Load a saved snapshot from persistent collection
+  const handleLoadSnapshot = (snapshot: SavedSnapshot) => {
+    pushHistory(snapshot.html, 'template', `Snapshot: ${snapshot.name}`);
+    setOriginalHtml(snapshot.html);
+    setActiveTab('studio');
+  };
+
   const activeModel = AI_MODELS.find(m => m.id === activeModelId) || AI_MODELS[0];
 
   return (
@@ -155,6 +176,9 @@ export default function App() {
         onUndo={undo}
         onRedo={redo}
         onRevertToIndex={revertToIndex}
+        savedCount={totalSnapshots}
+        onOpenSaveSnapshot={() => setIsSaveSnapshotOpen(true)}
+        onOpenSnapshotsDrawer={() => setIsSnapshotsDrawerOpen(true)}
       />
 
       {/* Main Container */}
@@ -230,6 +254,7 @@ export default function App() {
                 html={currentHtml}
                 onUpdateHtml={(newHtml) => updateHtml(newHtml, 'Viewport Live Update')}
                 onOpenExportModal={() => setIsExportModalOpen(true)}
+                onOpenSaveSnapshot={() => setIsSaveSnapshotOpen(true)}
                 activeModelName={activeModel.name}
               />
             )}
@@ -239,6 +264,7 @@ export default function App() {
                 html={currentHtml}
                 onChangeHtml={(updated) => updateHtml(updated, 'Manual Code Edit')}
                 onOpenExportModal={() => setIsExportModalOpen(true)}
+                onOpenSaveSnapshot={() => setIsSaveSnapshotOpen(true)}
                 onResetOriginal={() => pushHistory(originalHtml, 'editor', 'Reset to Original')}
                 canUndo={canUndo}
                 canRedo={canRedo}
@@ -254,6 +280,7 @@ export default function App() {
                     html={currentHtml}
                     onUpdateHtml={(newHtml) => updateHtml(newHtml, 'Viewport Live Update')}
                     onOpenExportModal={() => setIsExportModalOpen(true)}
+                    onOpenSaveSnapshot={() => setIsSaveSnapshotOpen(true)}
                     activeModelName={activeModel.name}
                   />
                 </div>
@@ -262,6 +289,7 @@ export default function App() {
                     html={currentHtml}
                     onChangeHtml={(updated) => updateHtml(updated, 'Manual Code Edit')}
                     onOpenExportModal={() => setIsExportModalOpen(true)}
+                    onOpenSaveSnapshot={() => setIsSaveSnapshotOpen(true)}
                     onResetOriginal={() => pushHistory(originalHtml, 'editor', 'Reset to Original')}
                     canUndo={canUndo}
                     canRedo={canRedo}
@@ -347,6 +375,36 @@ export default function App() {
         onClose={() => setIsExportModalOpen(false)}
         html={currentHtml}
         defaultFilename={selectedTemplate.id || 'responsive-template'}
+      />
+
+      {/* Save Snapshot Modal */}
+      <SaveSnapshotModal
+        isOpen={isSaveSnapshotOpen}
+        onClose={() => setIsSaveSnapshotOpen(false)}
+        html={currentHtml}
+        defaultName={selectedTemplate.title ? `${selectedTemplate.title} - Snapshot` : 'Responsive Template Snapshot'}
+        activeModelName={activeModel.name}
+        onSave={(name, description, tags) => {
+          saveSnapshot(currentHtml, name, {
+            description,
+            tags,
+            modelBadge: activeModel.shortName,
+          });
+        }}
+      />
+
+      {/* Saved Snapshots Collection Drawer */}
+      <SavedSnapshotsDrawer
+        isOpen={isSnapshotsDrawerOpen}
+        onClose={() => setIsSnapshotsDrawerOpen(false)}
+        snapshots={snapshots}
+        onLoadSnapshot={handleLoadSnapshot}
+        onDeleteSnapshot={deleteSnapshot}
+        onClearAll={clearAllSnapshots}
+        onOpenSaveModal={() => {
+          setIsSnapshotsDrawerOpen(false);
+          setIsSaveSnapshotOpen(true);
+        }}
       />
     </div>
   );

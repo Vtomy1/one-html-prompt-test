@@ -14,7 +14,8 @@ import {
   Layers,
   ZoomIn,
   ZoomOut,
-  Code2
+  Code2,
+  Bookmark
 } from 'lucide-react';
 import { exportHtmlFile } from '../utils/formatHtml';
 
@@ -22,6 +23,7 @@ interface ResponsiveViewportProps {
   html: string;
   onUpdateHtml?: (newHtml: string) => void;
   onOpenExportModal?: () => void;
+  onOpenSaveSnapshot?: () => void;
   activeModelName?: string;
 }
 
@@ -37,6 +39,7 @@ const VIEWPORT_PRESETS = [
 export const ResponsiveViewport: React.FC<ResponsiveViewportProps> = ({
   html,
   onOpenExportModal,
+  onOpenSaveSnapshot,
   activeModelName,
 }) => {
   const [currentWidth, setCurrentWidth] = useState<number>(1280);
@@ -223,6 +226,18 @@ export const ResponsiveViewport: React.FC<ResponsiveViewportProps> = ({
           >
             {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
           </button>
+
+          {/* Save Snapshot Button */}
+          {onOpenSaveSnapshot && (
+            <button
+              onClick={onOpenSaveSnapshot}
+              className="px-2.5 py-1.5 text-xs font-semibold text-amber-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-amber-500/30 rounded-lg transition-colors flex items-center gap-1.5 shadow-xs"
+              title="Save snapshot to permanent local storage collection"
+            >
+              <Bookmark className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Save Snapshot</span>
+            </button>
+          )}
 
           {/* Export HTML Button */}
           <button

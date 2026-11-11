@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Copy, Check, Download, FileCode, CheckCircle2, RotateCcw, Undo2, Redo2 } from 'lucide-react';
+import { Copy, Check, Download, FileCode, CheckCircle2, RotateCcw, Undo2, Redo2, Bookmark } from 'lucide-react';
 import { exportHtmlFile } from '../utils/formatHtml';
 
 interface CodeEditorProps {
   html: string;
   onChangeHtml: (updated: string) => void;
   onOpenExportModal?: () => void;
+  onOpenSaveSnapshot?: () => void;
   onResetOriginal?: () => void;
   canUndo?: boolean;
   canRedo?: boolean;
@@ -17,6 +18,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   html,
   onChangeHtml,
   onOpenExportModal,
+  onOpenSaveSnapshot,
   onResetOriginal,
   canUndo = false,
   canRedo = false,
@@ -140,6 +142,17 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
               </>
             )}
           </button>
+
+          {onOpenSaveSnapshot && (
+            <button
+              onClick={onOpenSaveSnapshot}
+              className="px-3 py-1.5 text-xs font-semibold text-amber-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-amber-500/30 rounded-lg transition-colors flex items-center gap-1.5 shadow-xs"
+              title="Save current state to permanent snapshot collection"
+            >
+              <Bookmark className="w-3.5 h-3.5 text-amber-400" />
+              <span>Save Snapshot</span>
+            </button>
+          )}
 
           <button
             onClick={handleDownload}
